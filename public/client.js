@@ -33,6 +33,12 @@ function calculate(operand1, operand2, operation) {
         case '/':
             uri += "?operation=divide";
             break;
+        case '^':
+            uri += "?operation=power";
+            break;
+        case 'sqrt':
+            uri += "?operation=sqrt";
+            break;
         default:
             setError();
             return;
@@ -51,6 +57,42 @@ function calculate(operand1, operand2, operation) {
         if (http.status == 200) {
             var response = JSON.parse(http.responseText);
             setValue(response.result);
+        } else {
+            setError();
+        }
+    };
+    http.send(null);
+}
+
+function calculateUnary(operand, operation, callback) {
+    var uri = location.origin + "/arithmetic";
+
+    switch (operation) {
+        case 'sqrt':
+            uri += "?operation=sqrt";
+            break;
+        default:
+            setError();
+            return;
+    }
+
+    uri += "&operand1=" + encodeURIComponent(operand);
+    uri += "&operand2=" + encodeURIComponent(operand);
+
+    setLoading(true);
+
+    var http = new XMLHttpRequest();
+    http.open("GET", uri, true);
+    http.onload = function () {
+        setLoading(false);
+
+        if (http.status == 200) {
+            var response = JSON.parse(http.responseText);
+            setValue(response.result);
+
+            if (typeof callback === 'function') {
+                callback(response.result);
+            }
         } else {
             setError();
         }
@@ -111,6 +153,11 @@ function signPressed() {
 }
 
 function operationPressed(op) {
+    if (op === 'sqrt') {
+        sqrtPressed();
+        return;
+    }
+
     operand1 = getValue();
     operation = op;
     state = states.operator;
@@ -138,12 +185,34 @@ document.addEventListener('keypress', (event) => {
         numberPressed(event.key);
     } else if (event.key == '.') {
         decimalPressed();
-    } else if (event.key.match(/^[-*+/]$/)) {
+    } else if (event.key.match(/^[-*+/^]$/)) {
         operationPressed(event.key);
     } else if (event.key == '=') {
         equalPressed();
+    } else if (event.key.toLowerCase() == 'r') {
+        sqrtPressed();
     }
 });
+
+function sqrtPressed() {
+    var currentState = state;
+    var currentValue = getValue();
+
+    calculateUnary(currentValue, 'sqrt', function (result) {
+        if (currentState == states.operator) {
+            operand1 = result;
+            state = states.operator;
+        } else if (currentState == states.operand2) {
+            operand2 = result;
+            state = states.operand2;
+        } else {
+            operand1 = result;
+            operand2 = result;
+            operation = 'sqrt';
+            state = states.complete;
+        }
+    });
+}
 
 function getValue() {
     return value;
