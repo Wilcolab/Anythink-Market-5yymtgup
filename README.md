@@ -6,6 +6,12 @@
 
 The project contains a simple node.js application that exposes REST APIs to perform arithmetic on integers, and provides a test suite with mocha and chai.
 
+## Calculator Features
+
+- Binary operations: addition, subtraction, multiplication, division, and exponentiation (power `^`).
+- Unary operation: square root (`√`) is available from the UI button or by pressing `r` on the keyboard.
+- Keyboard shortcuts: digits, decimal point, operators (`+`, `-`, `*`, `/`, `^`), equals (`=`), and square root (`r`).
+
 ## Instructions 
 
 In order to run the app use `npm start`
