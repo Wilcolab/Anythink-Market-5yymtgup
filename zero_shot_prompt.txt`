@@ -1,0 +1,28 @@
+// toSnakeCase.js
+// Converts a string to snake_case
+function toSnakeCase(input) {
+    if (input == null) return '';
+    const str = String(input).trim();
+    if (str === '') return '';
+
+    // Break camelCase / PascalCase (e.g. "fooBar" -> "foo_Bar")
+    const step1 = str
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/([A-Z])([A-Z][a-z])/g, '$1_$2');
+
+    // Normalize and remove diacritics if available
+    const normalized = typeof step1.normalize === 'function'
+        ? step1.normalize('NFKD').replace(/\p{M}/gu, '')
+        : step1;
+
+    // Replace any non-letter/number sequences with underscores, collapse multiples, trim, lowercase
+    const snake = normalized
+        .replace(/[^\p{L}\p{N}]+/gu, '_') // non-alnum => _
+        .replace(/^_+|_+$/g, '')          // trim leading/trailing _
+        .replace(/_+/g, '_')              // collapse multiple _
+        .toLowerCase();
+
+    return snake;
+}
+
+module.exports = toSnakeCase;
